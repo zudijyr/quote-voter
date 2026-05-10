@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shuffle, ThumbsUp, ThumbsDown, RotateCcw, BookOpen } from "lucide-react";
+import { Shuffle, ThumbsUp, ThumbsDown, BookOpen } from "lucide-react";
 import { BOOK_A, BOOK_B } from "./quotes";
 import { supabase } from "./supabaseClient";
 
@@ -54,28 +54,6 @@ export default function QuoteSimilarityVoter() {
     setLastVote(null);
   }
 
-  //async function castVote(choice) {
-  //  const vote = {
-  //    pair_id: pair.pairId,
-  //    left_quote_id: pair.left.id,
-  //    right_quote_id: pair.right.id,
-  //    choice,
-  //  };
-
-  //  const { data, error } = await supabase
-  //    .from("votes")
-  //    .insert(vote)
-  //    .select()
-  //    .single();
-
-  //  if (error) {
-  //    console.warn("Could not save vote:", error);
-  //    return;
-  //  }
-
-  //  setVotes((currentVotes) => [data, ...currentVotes]);
-  //  setLastVote(choice);
-  //}
   async function castVote(choice) {
     const vote = {
       pair_id: pair.pairId,
@@ -83,32 +61,55 @@ export default function QuoteSimilarityVoter() {
       right_quote_id: pair.right.id,
       choice,
     };
-  
-    console.log("Attempting Supabase insert:", vote);
-  
+
     const { data, error } = await supabase
       .from("votes")
       .insert(vote)
       .select()
       .single();
-  
+
     if (error) {
-      console.error("Supabase insert failed:", error);
-      alert(`Could not save vote: ${error.message}`);
+      console.warn("Could not save vote:", error);
       return;
     }
-  
-    console.log("Supabase insert succeeded:", data);
-  
+
     setVotes((currentVotes) => [data, ...currentVotes]);
     setLastVote(choice);
+    nextPair();
   }
+  //async function castVote(choice) {
+  //  const vote = {
+  //    pair_id: pair.pairId,
+  //    left_quote_id: pair.left.id,
+  //    right_quote_id: pair.right.id,
+  //    choice,
+  //  };
+  //
+  //  console.log("Attempting Supabase insert:", vote);
+  //
+  //  const { data, error } = await supabase
+  //    .from("votes")
+  //    .insert(vote)
+  //    .select()
+  //    .single();
+  //
+  //  if (error) {
+  //    console.error("Supabase insert failed:", error);
+  //    alert(`Could not save vote: ${error.message}`);
+  //    return;
+  //  }
+  //
+  //  console.log("Supabase insert succeeded:", data);
+  //
+  //  setVotes((currentVotes) => [data, ...currentVotes]);
+  //  setLastVote(choice);
+  //}
 
 
-  function resetVotes() {
-    setVotes([]);
-    setLastVote(null);
-  }
+//  function resetVotes() {
+//    setVotes([]);
+//    setLastVote(null);
+//  }
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-50 p-4 sm:p-8">
@@ -178,9 +179,6 @@ export default function QuoteSimilarityVoter() {
               </button>
               <button onClick={nextPair} className="inline-flex items-center rounded-2xl border border-zinc-700 bg-transparent px-4 py-2 font-medium text-zinc-50 hover:bg-zinc-800">
                 <Shuffle className="mr-2 h-4 w-4" /> New pair
-              </button>
-              <button onClick={resetVotes} className="inline-flex items-center rounded-2xl px-4 py-2 font-medium text-zinc-300 hover:bg-zinc-800">
-                <RotateCcw className="mr-2 h-4 w-4" /> Reset
               </button>
             </div>
           </div>
