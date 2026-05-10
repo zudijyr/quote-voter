@@ -19,16 +19,6 @@ function makePair() {
 
 const VOTES_STORAGE_KEY = "quote-similarity-votes";
 
-//function loadSavedVotes() {
-//  try {
-//    const savedVotes = localStorage.getItem(VOTES_STORAGE_KEY);
-//    return savedVotes ? JSON.parse(savedVotes) : [];
-//  } catch (error) {
-//    console.warn("Could not load saved votes:", error);
-//    return [];
-//  }
-//}
-
 export default function QuoteSimilarityVoter() {
   const [pair, setPair] = useState(() => makePair());
   const [votes, setVotes] = useState([]);
@@ -64,6 +54,28 @@ export default function QuoteSimilarityVoter() {
     setLastVote(null);
   }
 
+  //async function castVote(choice) {
+  //  const vote = {
+  //    pair_id: pair.pairId,
+  //    left_quote_id: pair.left.id,
+  //    right_quote_id: pair.right.id,
+  //    choice,
+  //  };
+
+  //  const { data, error } = await supabase
+  //    .from("votes")
+  //    .insert(vote)
+  //    .select()
+  //    .single();
+
+  //  if (error) {
+  //    console.warn("Could not save vote:", error);
+  //    return;
+  //  }
+
+  //  setVotes((currentVotes) => [data, ...currentVotes]);
+  //  setLastVote(choice);
+  //}
   async function castVote(choice) {
     const vote = {
       pair_id: pair.pairId,
@@ -71,21 +83,27 @@ export default function QuoteSimilarityVoter() {
       right_quote_id: pair.right.id,
       choice,
     };
-
+  
+    console.log("Attempting Supabase insert:", vote);
+  
     const { data, error } = await supabase
       .from("votes")
       .insert(vote)
       .select()
       .single();
-
+  
     if (error) {
-      console.warn("Could not save vote:", error);
+      console.error("Supabase insert failed:", error);
+      alert(`Could not save vote: ${error.message}`);
       return;
     }
-
+  
+    console.log("Supabase insert succeeded:", data);
+  
     setVotes((currentVotes) => [data, ...currentVotes]);
     setLastVote(choice);
   }
+
 
   function resetVotes() {
     setVotes([]);
