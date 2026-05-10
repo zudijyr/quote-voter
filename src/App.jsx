@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shuffle, ThumbsUp, ThumbsDown, RotateCcw, BookOpen } from "lucide-react";
 import { BOOK_A, BOOK_B } from "./quotes";
+import { supabase } from "./supabaseClient";
 
 
 function randomItem(array) {
@@ -18,19 +19,36 @@ function makePair() {
 
 const VOTES_STORAGE_KEY = "quote-similarity-votes";
 
-function loadSavedVotes() {
-  try {
-    const savedVotes = localStorage.getItem(VOTES_STORAGE_KEY);
-    return savedVotes ? JSON.parse(savedVotes) : [];
-  } catch (error) {
-    console.warn("Could not load saved votes:", error);
-    return [];
-  }
-}
+//function loadSavedVotes() {
+//  try {
+//    const savedVotes = localStorage.getItem(VOTES_STORAGE_KEY);
+//    return savedVotes ? JSON.parse(savedVotes) : [];
+//  } catch (error) {
+//    console.warn("Could not load saved votes:", error);
+//    return [];
+//  }
+//}
 
 export default function QuoteSimilarityVoter() {
   const [pair, setPair] = useState(() => makePair());
-  const [votes, setVotes] = useState(() => loadSavedVotes());
+  const [votes, setVotes] = useState([]);
+  useEffect(() => {
+    async function loadVotes() {
+      const { data, error } = await supabase
+        .from("votes")
+        .select("*")
+        .order("created_at", { ascending: false });
+  
+      if (error) {
+        console.warn("Could not load votes:", error);
+        return;
+      }
+  
+      setVotes(data ?? []);
+    }
+  
+    loadVotes();
+  }, []);
   const [lastVote, setLastVote] = useState(null);
 
   const stats = useMemo(() => {
@@ -41,30 +59,31 @@ export default function QuoteSimilarityVoter() {
     return { similar, different, total, similarityRate };
   }, [votes]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(VOTES_STORAGE_KEY, JSON.stringify(votes));
-    } catch (error) {
-      console.warn("Could not save votes:", error);
-    }
-  }, [votes]);
-
   function nextPair() {
     setPair(makePair());
     setLastVote(null);
   }
 
-  function castVote(choice) {
+  async function castVote(choice) {
     const vote = {
-      id: crypto.randomUUID(),
-      pairId: pair.pairId,
-      leftQuoteId: pair.left.id,
-      rightQuoteId: pair.right.id,
+      pair_id: pair.pairId,
+      left_quote_id: pair.left.id,
+      right_quote_id: pair.right.id,
       choice,
-      createdAt: new Date().toISOString(),
     };
 
-    setVotes((currentVotes) => [vote, ...currentVotes]);
+    const { data, error } = await supabase
+      .from("votes")
+      .insert(vote)
+      .select()
+      .single();
+
+    if (error) {
+      console.warn("Could not save vote:", error);
+      return;
+    }
+
+    setVotes((currentVotes) => [data, ...currentVotes]);
     setLastVote(choice);
   }
 
@@ -172,7 +191,7 @@ export default function QuoteSimilarityVoter() {
               {votes.slice(0, 8).map((vote) => (
                 <div key={vote.id} className="flex flex-col rounded-2xl border border-zinc-800 bg-zinc-950/60 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-zinc-300">
-                    {vote.leftQuoteId} × {vote.rightQuoteId}
+                    {vote.leftQuoteId} × {vote.right_quote_id}
                   </span>
                   <span className="font-medium capitalize text-zinc-100">{vote.choice}</span>
                 </div>
