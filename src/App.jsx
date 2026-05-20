@@ -121,10 +121,10 @@ export default function QuoteSimilarityVoter() {
               Quote Similarity Lab
             </div>
             <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
-              Are these two passages cousins, enemies, or twins in fake mustaches?
+              Are these two passages similar enough to be a parody of the other?
             </h1>
             <p className="mt-3 max-w-2xl text-zinc-300">
-              Randomly pair one quote from each book, then vote on whether they feel similar. Swap in your own quote lists when you are ready.
+              Randomly pair one quote from each book, then vote on whether they feel similar.
             </p>
           </div>
 
@@ -166,7 +166,7 @@ export default function QuoteSimilarityVoter() {
             <div>
               <h2 className="text-xl font-semibold">Your verdict</h2>
               <p className="text-sm text-zinc-400">
-                Vote, then shuffle to the next pair. The tiny jury box remembers your session locally in React state.
+                Vote, then shuffle to the next pair. Vote for as many or as few as you like. Use your first instinct.
               </p>
             </div>
 
