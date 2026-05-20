@@ -232,7 +232,6 @@ function QuoteCard({ book, quote }) {
             “{quote.text}”
           </blockquote>
         </div>
-        <div className="text-sm text-zinc-500">Quote ID: {quote.id}</div>
       </div>
     </div>
   );
